@@ -51,14 +51,23 @@ async def on_message(message):
     if message.content.casefold().startswith('!GMR@ME'.casefold()):
         mentionstr = str(message.author.mention)
         gmrname = message.content[8:]
+        site_request = requests.get(os.getenv('GMR_URL'))
+        jsonResponse = site_request.json()
+        playerdata = jsonResponse["Players"]
+        userexists = "false"
+        for player in playerdata:
+            if player["PersonaName"] == gmrname:
+                userexists = "true"
         try:
+            if userexists == "false":
+                raise Exception()
             with open('users.csv', mode='a') as usercsv:
                 usercsv_writer = csv.writer(usercsv, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 usercsv_writer.writerow([gmrname, mentionstr])
             response = "I will mention " + mentionstr + " when it is " + gmrname + "'s turn"
             await message.channel.send(response)
         except:
-            response = "Something went wrong, try again"
+            response = "Something went wrong, try again\n**Proper use:**\n!GMR@ME [Steam Name Here]"
             await message.channel.send(response)
 
 client.run(TOKEN)
